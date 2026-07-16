@@ -1,0 +1,2 @@
+@import "tailwindcss";
+:root{color-scheme:dark;--blue:#071b3a;--gold:#d7a83f;--green:#23c483}body{margin:0;background:radial-gradient(circle at top,#12386e,var(--blue) 42%,#020817);color:#f8fafc}.glass{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(18px);box-shadow:0 20px 70px rgba(0,0,0,.25)}.skeleton{animation:pulse 1.8s infinite;background:linear-gradient(90deg,#ffffff10,#ffffff30,#ffffff10);background-size:200% 100%}@keyframes pulse{to{background-position:-200% 0}}

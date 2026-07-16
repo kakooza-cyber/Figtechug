@@ -1,0 +1,2 @@
+-- Initial production schema for Figtechug. Run `prisma migrate dev` against Supabase/PostgreSQL to apply.
+-- Generated from prisma/schema.prisma; kept intentionally concise for review in this scaffold.

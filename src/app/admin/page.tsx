@@ -1,0 +1,3 @@
+import { Card, Shell } from '@/components/ui';
+const modules=['User Management','Investment Products','Deposit Management','Withdrawal Management','Wallet Management','Referral Management','Announcements','Support Tickets','Reports','Analytics','Settings'];
+export default function Admin(){return <Shell><div className="mx-auto max-w-6xl"><h1 className="mb-6 text-4xl font-black">Admin Panel</h1><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{modules.map(m=><Card key={m}><h2 className="text-xl font-bold">{m}</h2><p className="mt-2 text-sm text-slate-300">Review, configure, approve, reject, and audit platform operations.</p></Card>)}</div></div></Shell>}
