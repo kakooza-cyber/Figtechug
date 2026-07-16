@@ -1,0 +1,2 @@
+import { NextRequest } from 'next/server'; import { prisma } from '@/lib/prisma'; import { currentUser, json } from '@/lib/security';
+export async function GET(req:NextRequest){const user=await currentUser(req); if(user?.role!=='ADMIN')return json({error:'Forbidden'},403); const [users,deposits,withdrawals,products]=await Promise.all([prisma.user.count(),prisma.deposit.count({where:{status:'PENDING'}}),prisma.withdrawal.count({where:{status:'PENDING'}}),prisma.investmentProduct.count()]); return json({users,pendingDeposits:deposits,pendingWithdrawals:withdrawals,products})}

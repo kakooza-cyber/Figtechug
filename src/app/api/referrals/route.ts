@@ -1,0 +1,2 @@
+import { NextRequest } from 'next/server'; import { prisma } from '@/lib/prisma'; import { currentUser, json } from '@/lib/security';
+export async function GET(req:NextRequest){const user=await currentUser(req); if(!user)return json({error:'Unauthorized'},401); const me=await prisma.user.findUnique({where:{id:user.sub},include:{referrals:true,referralRewards:true}}); return json({code:me?.referralCode,link:process.env.NEXT_PUBLIC_APP_URL+'/register?ref='+me?.referralCode,referrals:me?.referrals,rewards:me?.referralRewards})}

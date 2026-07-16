@@ -1,0 +1,23 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+
+enum Role { USER ADMIN }
+enum RequestStatus { PENDING APPROVED REJECTED }
+enum ProductStatus { ACTIVE INACTIVE }
+enum InvestmentStatus { ACTIVE COMPLETED CANCELLED }
+enum RewardType { FIXED PERCENTAGE }
+
+model User { id String @id @default(cuid()) phone String @unique passwordHash String role Role @default(USER) referralCode String @unique referredById String? referredBy User? @relation("UserReferrals", fields:[referredById], references:[id]) referrals User[] @relation("UserReferrals") profilePhotoUrl String? createdAt DateTime @default(now()) wallet Wallet? deposits Deposit[] withdrawals Withdrawal[] investments Investment[] notifications Notification[] referralRewards ReferralReward[] }
+model Wallet { id String @id @default(cuid()) userId String @unique user User @relation(fields:[userId], references:[id]) available Decimal @default(0) locked Decimal @default(0) transactions WalletTransaction[] updatedAt DateTime @updatedAt }
+model WalletTransaction { id String @id @default(cuid()) walletId String wallet Wallet @relation(fields:[walletId], references:[id]) type String amount Decimal status RequestStatus @default(APPROVED) reference String? metadata Json? createdAt DateTime @default(now()) }
+model Deposit { id String @id @default(cuid()) userId String user User @relation(fields:[userId], references:[id]) amount Decimal senderPhone String transactionId String @unique network String screenshotUrl String? status RequestStatus @default(PENDING) createdAt DateTime @default(now()) reviewedAt DateTime? }
+model Withdrawal { id String @id @default(cuid()) userId String user User @relation(fields:[userId], references:[id]) amount Decimal phone String network String status RequestStatus @default(PENDING) createdAt DateTime @default(now()) reviewedAt DateTime? }
+model InvestmentProduct { id String @id @default(cuid()) name String description String minInvestment Decimal maxInvestment Decimal durationDays Int returnMethod Json riskDisclosure String status ProductStatus @default(ACTIVE) investments Investment[] createdAt DateTime @default(now()) }
+model Investment { id String @id @default(cuid()) userId String user User @relation(fields:[userId], references:[id]) productId String product InvestmentProduct @relation(fields:[productId], references:[id]) principal Decimal expectedReturn Decimal status InvestmentStatus @default(ACTIVE) startDate DateTime @default(now()) maturityDate DateTime }
+model ReferralRule { id String @id @default(cuid()) level Int @unique rewardType RewardType rewardAmount Decimal? rewardPercent Decimal? qualification Json? active Boolean @default(true) }
+model ReferralReward { id String @id @default(cuid()) userId String user User @relation(fields:[userId], references:[id]) sourceUserId String level Int amount Decimal status RequestStatus @default(APPROVED) createdAt DateTime @default(now()) }
+model Notification { id String @id @default(cuid()) userId String? user User? @relation(fields:[userId], references:[id]) title String body String type String read Boolean @default(false) createdAt DateTime @default(now()) }
+model Announcement { id String @id @default(cuid()) title String body String active Boolean @default(true) createdAt DateTime @default(now()) }
+model SupportTicket { id String @id @default(cuid()) userId String subject String message String status String @default("OPEN") createdAt DateTime @default(now()) }
+model Setting { key String @id value Json updatedAt DateTime @updatedAt }
+model PaymentNumber { id String @id @default(cuid()) network String phone String instructions String active Boolean @default(true) }
