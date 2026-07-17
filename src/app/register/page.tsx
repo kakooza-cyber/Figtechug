@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -8,33 +9,46 @@ export default function Page() {
   const router = useRouter();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
-  const [referredByCode, setReferredByCode] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [referralCode, setReferralCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const res = await fetch('/api/register', {
+      // Pointing to your exact backend endpoint
+      const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           phone, 
           password, 
-          referredByCode 
+          confirmPassword,
+          referralCode: referralCode || undefined
         }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Registration failed');
+        throw new Error(data.message || data.error || 'Registration failed');
       }
 
-      // Automatically redirect to login page after successful signup
+      // Save token if your app uses localStorage/cookies
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
+
       router.push('/login?registered=true');
     } catch (err: any) {
       setError(err.message);
@@ -89,13 +103,27 @@ export default function Page() {
 
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                required
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700/80 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent placeholder-slate-500 transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
                 Referral Code (Optional)
               </label>
               <input
                 type="text"
                 placeholder="Enter code if referred"
-                value={referredByCode}
-                onChange={(e) => setReferredByCode(e.target.value)}
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value)}
                 className="w-full px-4 py-3 bg-slate-900/60 border border-slate-700/80 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent placeholder-slate-500 transition-all"
               />
             </div>
