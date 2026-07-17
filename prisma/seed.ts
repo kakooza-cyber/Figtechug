@@ -1,6 +1,12 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DIRECT_URL,
+    },
+  },
+});
 async function main() {
   const admin = await prisma.user.upsert({ where: { phone: '+256700000000' }, update: {}, create: { phone: '+256700000000', passwordHash: await bcrypt.hash('AdminPass123!', 12), role: 'ADMIN', referralCode: 'ADMIN001', wallet: { create: {} } } });
   await prisma.setting.upsert({ where: { key: 'platform' }, update: {}, create: { key: 'platform', value: { name: 'Figtechug', minimumWithdrawal: 10000, maintenanceMode: false, supportPhone: '+256700000000' } } });
