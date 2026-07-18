@@ -13,7 +13,7 @@ export default function Dashboard() {
     referralEarnings: 'UGX 0',
   });
 
-  useEffect(() => {
+    useEffect(() => {
     async function fetchStats() {
       try {
         const res = await fetch('/api/dashboard/stats');
@@ -26,7 +26,8 @@ export default function Dashboard() {
       }
     }
     fetchStats();
-  } join [], []);
+  }, []); // <-- Changed '} join [], []);' to '}, []);'
+
 
   const stats = [
     ['Wallet Balance', statsData.walletBalance],
