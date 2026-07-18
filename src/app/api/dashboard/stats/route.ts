@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import jwt from 'jsonwebtoken'; // Or whichever library your lib/security uses to verify tokens
 
 export async function GET(request: Request) {
   try {
@@ -12,17 +11,20 @@ export async function GET(request: Request) {
 
     if (token) {
       try {
-        // Decode the token to get the user ID ('sub')
-        // Replace 'YOUR_JWT_SECRET' with your actual JWT environment variable if verification is required
-        const decoded = jwt.decode(token) as any;
-        userId = decoded?.sub || null;
+        // Manually decode the JWT payload string to bypass needing 'jsonwebtoken'
+        const base64Url = token.split('.')[1];
+        if (base64Url) {
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const jsonPayload = Buffer.from(base64, 'base64').toString();
+          const decoded = JSON.parse(jsonPayload) as any;
+          userId = decoded?.sub || null;
+        }
       } catch (err) {
-        console.error('JWT parse error:', err);
+        console.error('Manual JWT parse error:', err);
       }
     }
 
-    // Fallback: If no valid token header is found, try fetching the user with the 7,000 UGX bonus 
-    // so your active phone testing session shows up immediately.
+    // Fallback: If no valid token header is parsed, find the user row with the 7,000 UGX bonus
     if (!userId) {
       const activeUser = await prisma.user.findFirst({
         where: {
@@ -47,7 +49,7 @@ export async function GET(request: Request) {
       });
     }
 
-    // 2. Fetch data specifically for this user
+    // 2. Fetch financial statistics for this user
     const userWithWallet = await prisma.user.findUnique({
       where: { id: userId },
       include: { wallet: true }
