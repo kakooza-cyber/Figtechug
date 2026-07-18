@@ -1,76 +1,40 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { Card, Shell, Stat } from '@/components/ui';
-import { prisma } from '@/lib/prisma'; // Adjust this import path to match where your prisma client is initialized
-import { getServerSession } from 'next-auth'; // Adjust if you use a different auth package like Supabase auth
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'; // Adjust path based on your setup
 
-export default async function Dashboard() {
-  let walletBalance = 'UGX 0';
-  let pendingDeposits = '0';
-  let pendingWithdrawals = '0';
-  let activeInvestments = '0';
-  let completedInvestments = '0';
-  let referralEarnings = 'UGX 0';
+export default function Dashboard() {
+  const [statsData, setStatsData] = useState<any>({
+    walletBalance: 'UGX 0',
+    pendingDeposits: '0',
+    pendingWithdrawals: '0',
+    activeInvestments: '0',
+    completedInvestments: '0',
+    referralEarnings: 'UGX 0',
+  });
 
-  try {
-    // 1. Get the current logged-in user's session
-    const session = await getServerSession(authOptions) as any;
-    const userId = session?.user?.id;
-
-    if (userId) {
-      // 2. Fetch the wallet details (Available balance mapped from schema)
-      const wallet = await prisma.wallet.findUnique({
-        where: { userId },
-      }) as any;
-
-      if (wallet) {
-        // Formatting Decimal to a readable currency string
-        const availableAmount = Number(wallet.available || 0).toLocaleString();
-        walletBalance = `UGX ${availableAmount}`;
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const res = await fetch('/api/dashboard/stats');
+        if (res.ok) {
+          const data = await res.json();
+          setStatsData(data);
+        }
+      } catch (error) {
+        console.error('Failed loading stats:', error);
       }
-
-      // 3. Count Pending Deposits
-      const depositCount = await prisma.deposit.count({
-        where: { userId, status: 'PENDING' },
-      }) as any;
-      pendingDeposits = String(depositCount);
-
-      // 4. Count Pending Withdrawals
-      const withdrawalCount = await prisma.withdrawal.count({
-        where: { userId, status: 'PENDING' },
-      }) as any;
-      pendingWithdrawals = String(withdrawalCount);
-
-      // 5. Count Active Investments
-      const activeInvCount = await prisma.investment.count({
-        where: { userId, status: 'ACTIVE' },
-      }) as any;
-      activeInvestments = String(activeInvCount);
-
-      // 6. Count Completed Investments
-      const completedInvCount = await prisma.investment.count({
-        where: { userId, status: 'COMPLETED' },
-      }) as any;
-      completedInvestments = String(completedInvCount);
-
-      // 7. Calculate Referral Earnings
-      const rewards = await prisma.referralReward.findMany({
-        where: { userId, status: 'APPROVED' },
-      }) as any[];
-      
-      const totalRewards = rewards.reduce((sum, item) => sum + Number(item.amount || 0), 0);
-      referralEarnings = `UGX ${totalRewards.toLocaleString()}`;
     }
-  } catch (error) {
-    console.error('Error loading dashboard stats:', error);
-  }
+    fetchStats();
+  } join [], []);
 
   const stats = [
-    ['Wallet Balance', walletBalance],
-    ['Pending Deposits', pendingDeposits],
-    ['Pending Withdrawals', pendingWithdrawals],
-    ['Active Investments', activeInvestments],
-    ['Completed Investments', completedInvestments],
-    ['Referral Earnings', referralEarnings],
+    ['Wallet Balance', statsData.walletBalance],
+    ['Pending Deposits', statsData.pendingDeposits],
+    ['Pending Withdrawals', statsData.pendingWithdrawals],
+    ['Active Investments', statsData.activeInvestments],
+    ['Completed Investments', statsData.completedInvestments],
+    ['Referral Earnings', statsData.referralEarnings],
   ];
 
   return (
