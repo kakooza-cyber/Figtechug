@@ -1,8 +1,11 @@
+// Conflict resolution manual push
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { json, phoneSchema, signToken } from '@/lib/security';
 import { referralCode } from '@/lib/domain';
+
+const WELCOME_BONUS_UGX = 7000;
 
 const schema = z.object({
   phone: phoneSchema,
@@ -20,7 +23,20 @@ export async function POST(req: Request) {
       passwordHash: await bcrypt.hash(body.password, 12),
       referralCode: referralCode(),
       referredById: ref?.id,
-      wallet: { create: {} },
+      wallet: {
+        create: {
+          available: WELCOME_BONUS_UGX,
+          transactions: {
+            create: {
+              amount: WELCOME_BONUS_UGX,
+              metadata: { reason: 'New user welcome bonus' },
+              reference: 'WELCOME_BONUS',
+              status: 'APPROVED',
+              type: 'WELCOME_BONUS',
+            },
+          },
+        },
+      },
     },
   });
   const token = await signToken({ sub: user.id, role: user.role });

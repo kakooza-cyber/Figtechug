@@ -1,6 +1,9 @@
+// Conflict resolution manual push
+import { DepositForm } from '@/components/deposit-form';
 import { ProductCard } from '@/components/product-card';
 import { Card, Shell, Stat } from '@/components/ui';
 import { activeProducts } from '@/lib/products';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,8 +16,21 @@ const stats = [
   ['Referral Earnings', 'UGX 0'],
 ];
 
+async function activePaymentDestination() {
+  const paymentNumber = await prisma.paymentNumber.findFirst({
+    orderBy: { id: 'asc' },
+    where: { active: true },
+  });
+
+  return paymentNumber ? {
+    instructions: paymentNumber.instructions,
+    network: paymentNumber.network,
+    phone: paymentNumber.phone,
+  } : null;
+}
+
 export default async function Dashboard() {
-  const products = await activeProducts();
+  const [products, destination] = await Promise.all([activeProducts(), activePaymentDestination()]);
 
   return (
     <Shell>
@@ -23,6 +39,17 @@ export default async function Dashboard() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {stats.map(([label, value]) => <Stat key={label} label={label} value={value} />)}
         </div>
+
+        <section className="mt-8">
+          <Card>
+            <div className="mb-5">
+              <p className="text-[#23c483]">Recharge / Deposit</p>
+              <h2 className="mt-2 text-3xl font-black">Manual deposit request</h2>
+              <p className="mt-3 text-slate-300">Send funds to the configured payment destination, then submit your transfer details for admin approval.</p>
+            </div>
+            <DepositForm destination={destination} />
+          </Card>
+        </section>
 
         <section className="mt-8">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
