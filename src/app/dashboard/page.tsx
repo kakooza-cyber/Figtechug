@@ -12,26 +12,32 @@ export default function Dashboard() {
     completedInvestments: '0',
     referralEarnings: 'UGX 0',
   });
-
-      useEffect(() => {
+  useEffect(() => {
     async function fetchStats() {
       try {
-        const token = localStorage.getItem('token'); // Make sure this matches the key you store it under on login
+        const token = localStorage.getItem('token');
         const res = await fetch('/api/dashboard/stats', {
           headers: {
             'Authorization': token ? `Bearer ${token}` : '',
           }
         });
+        
         if (res.ok) {
           const data = await res.json();
           setStatsData(data);
+        } else {
+          const errorData = await res.text();
+          alert(`Server Error: ${res.status} - ${errorData}`); // Catches API failures
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed loading stats:', error);
+        alert(`Frontend Fetch Catch: ${error.message}`); // Catches network errors
       }
     }
     fetchStats();
   }, []);
+
+    
 
 
 
