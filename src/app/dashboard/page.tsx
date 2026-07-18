@@ -13,10 +13,15 @@ export default function Dashboard() {
     referralEarnings: 'UGX 0',
   });
 
-    useEffect(() => {
+      useEffect(() => {
     async function fetchStats() {
       try {
-        const res = await fetch('/api/dashboard/stats');
+        const token = localStorage.getItem('token'); // Make sure this matches the key you store it under on login
+        const res = await fetch('/api/dashboard/stats', {
+          headers: {
+            'Authorization': token ? `Bearer ${token}` : '',
+          }
+        });
         if (res.ok) {
           const data = await res.json();
           setStatsData(data);
@@ -26,7 +31,8 @@ export default function Dashboard() {
       }
     }
     fetchStats();
-  }, []); // <-- Changed '} join [], []);' to '}, []);'
+  }, []);
+
 
 
   const stats = [
