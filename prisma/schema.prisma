@@ -55,13 +55,13 @@ model User {
 }
 
 model Wallet {
-  id           String              @id @default(cuid())
-  userId       String              @unique
-  user         User                @relation(fields: [userId], references: [id])
-  available    Decimal             @default(0)
-  locked       Decimal             @default(0)
+  id        String              @id @default(cuid())
+  userId    String              @unique
+  user      User                @relation(fields: [userId], references: [id])
+  available Decimal             @default(0)
+  locked    Decimal             @default(0)
   transactions WalletTransaction[]
-  updatedAt    DateTime            @updatedAt
+  updatedAt DateTime            @updatedAt
 }
 
 model WalletTransaction {
